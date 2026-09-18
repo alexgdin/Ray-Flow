@@ -19,7 +19,7 @@ public class ObjectManipulator : MonoBehaviour
     public static ObjectManipulator Instance { get; private set; }
 
     [Header("Mode")]
-    [SerializeField] private EditorMode mode = EditorMode.Playground;
+    [SerializeField] public EditorMode mode = EditorMode.Playground;
 
     [Header("Selection")]
     [SerializeField] private LayerMask selectableLayer = ~0; // set to your mirror/wall/prism layer for best results
@@ -65,7 +65,7 @@ public class ObjectManipulator : MonoBehaviour
         UpdateActionPanelPosition();
     }
 
-    void ApplyMode()
+    public void ApplyMode()
     {
         bool sandbox = mode == EditorMode.Playground;
         if (addToolbar != null) addToolbar.SetActive(sandbox);
@@ -149,13 +149,13 @@ public class ObjectManipulator : MonoBehaviour
     public void OnRotateButtonPressed()
     {
         if (m_selected == null || !m_selected.canRotate) return;
-        m_selected.transform.Rotate(0f, 0f, rotationStep);
+        m_selected.transform.Rotate(0f, 0f, -rotationStep);
     }
 
     public void OnRotateCCWButtonPressed()
     {
         if (m_selected == null || !m_selected.canRotate) return;
-        m_selected.transform.Rotate(0f, 0f, -rotationStep);
+        m_selected.transform.Rotate(0f, 0f, rotationStep);
     }
 
     public void OnDeleteButtonPressed()
