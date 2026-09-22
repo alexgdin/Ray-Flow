@@ -6,6 +6,7 @@ public class NewMonoBehaviourScript : MonoBehaviour
     [SerializeField] private float defDistanceRay = 25f;
     [SerializeField] private int maxBounces = 8;
     [SerializeField] private float surfaceOffset = 0.001f; // avoids the next ray re-hitting the same collider
+    [SerializeField] private PhysicsStatsHUD statsHUD;
 
     public Transform m_lightSource;
     public LineRenderer m_lineRenderer;
@@ -24,8 +25,8 @@ public class NewMonoBehaviourScript : MonoBehaviour
 
     void ThrowRay()
     {
+        RayStats stats = new RayStats();
         List<Vector2> points = new List<Vector2> { m_transform.position };
-
         Vector2 origin = m_transform.position;
         Vector2 direction = m_transform.right;
 
@@ -41,25 +42,39 @@ public class NewMonoBehaviourScript : MonoBehaviour
 
             if (hit.collider.CompareTag("mirror"))
             {
+                stats.totalPathLength += Vector2.Distance(origin, hit.point);
                 points.Add(hit.point);
-                direction = Vector2.Reflect(direction, hit.normal).normalized;
+
+                Vector2 reflectedDirection = Vector2.Reflect(direction, hit.normal).normalized;
+                stats.bounces.Add(new BounceReading
+                {
+                    point = hit.point,
+                    incidenceAngle = Vector2.Angle(-direction, hit.normal),
+                    reflectionAngle = Vector2.Angle(reflectedDirection, hit.normal)
+                });
+
+                direction = reflectedDirection;
                 origin = hit.point + direction * surfaceOffset;
-                continue; // cast the next segment from the reflection point
+                continue;
             }
 
             if (hit.collider.CompareTag("prism"))
             {
+                stats.totalPathLength += Vector2.Distance(origin, hit.point);
                 points.Add(hit.point);
                 Disperse(hit.point, direction, hit.transform);
                 break;
             }
 
-            // any other surface just absorbs the ray
+            stats.totalPathLength += Vector2.Distance(origin, hit.point);
+            stats.hitTarget = hit.collider.CompareTag("target");
             points.Add(hit.point);
             break;
         }
 
         Draw2DRay(points);
+        m_lineRenderer.GetComponent<LightRayFX>()?.SyncGlow();
+        statsHUD?.UpdateStats(stats);
     }
 
     void Draw2DRay(List<Vector2> points)
@@ -70,6 +85,7 @@ public class NewMonoBehaviourScript : MonoBehaviour
             m_lineRenderer.SetPosition(i, points[i]);
         }
     }
+
 
     void Disperse(Vector2 origin, Vector2 direction, Transform hitTransform)
     {
