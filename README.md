@@ -49,7 +49,7 @@ It was also an opportunity to explore game development and experiment with Unity
 
 ## Author
 
-**Alex G.**
+**Alex G. Din**
 
 GitHub: [@alexgdin](https://github.com/alexgdin)
 
